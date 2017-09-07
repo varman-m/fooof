@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """  """
 
 from py.test import raises
@@ -36,3 +37,17 @@ def test_trim_psd():
 
 	assert np.array_equal(f_out, np.array([2., 3., 4.]))
 	assert np.array_equal(p_out, np.array([3., 4., 5.]))
+    
+# test trim_psd() with optional ignore_range parameter
+def test_trim_psd_and_ignore():
+    
+    f_in = np.arange(1., 10, 1)
+    p_in = np.arange(1., 10, 1)
+    f_range = [1, 9]
+    ign_range = [[3, 4], [5, 6]]
+    
+    f_out, p_out = trim_psd(f_in, p_in, f_range, ignore_range=ign_range)
+    
+    assert np.array_equal(f_out, np.array([1., 2., 7., 8., 9.]))
+    assert np.array_equal(p_out, np.array([1., 2., 7., 8., 9.]))
+
