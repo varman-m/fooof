@@ -184,7 +184,7 @@ class FOOOF(object):
         
 ###        # Check if specified, then check type & dimensions
         if ignore_range != None:
-            if all(isinstance(to_ignore, list) or isinstance(to_ignore, ndarray) and len(to_ignore) == 2 \
+            if all(isinstance(to_ignore, list) or isinstance(to_ignore, tuple) and len(to_ignore) == 2 \
                    for to_ignore in ignore_range):
                 self.ignore_range = ignore_range
             else: 
