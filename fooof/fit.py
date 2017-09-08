@@ -40,6 +40,8 @@ class FOOOF(object):
         Input power spectral density values.
     freq_range : list of [float, float]
         Frequency range of the PSD.
+    ignore_range : list of lists of [float, float], optional
+        Inclusive frequency range(s) to exclude during full fitting procedure.
     freq_res : float
         Frequency resolution of the PSD.
     psd_fit : 1d array
@@ -67,7 +69,7 @@ class FOOOF(object):
     _sl_param_bounds :
         Parameter bounds for background fitting, as [offset, slope, curve].
     _bw_std_edge : float
-        Banwidth threshold for edge rejection of oscillations, units of standard deviation.
+        Bandwidth threshold for edge rejection of oscillations, units of standard deviation.
     _std_limits : list of [float, float]
         Bandwidth limits, converted to use for gaussian standard deviation parameter.
 
@@ -91,8 +93,8 @@ class FOOOF(object):
         self.max_n_oscs = max_n_oscs
         self.min_amp = min_amp
         self.amp_std_thresh = amp_std_thresh
-
-        ## SETTINGS
+        
+        ## SETTINGS       
         # Noise threshold, as a percentage of the lowest amplitude values in the total data to fit.
         #  Defines the minimum amplitude, above residuals, to be considered an oscillation.
         self._sl_amp_thresh = 0.025
@@ -118,6 +120,7 @@ class FOOOF(object):
         self.freqs = None
         self.psd = None
         self.freq_range = None
+        self.ignore_range = None
         self.freq_res = None
         self.psd_fit = None
         self.background_params = None
@@ -132,7 +135,7 @@ class FOOOF(object):
         self._oscillation_fit = None
 
 
-    def model(self, freqs, psd, freq_range, plt_log=False):
+    def model(self, freqs, psd, freq_range, ignore_range=None, plt_log=False):
         """Run model fit, plot, and print results.
 
         Parameters
@@ -143,14 +146,16 @@ class FOOOF(object):
             Power spectral density values.
         freq_range : list of [float, float]
             Desired frequency range to run FOOOF on.
+        ignore_range : list of lists of [float, float], optional
+            Inclusive frequency range(s) to exclude during full fitting procedure.
         """
 
-        self.fit(freqs, psd, freq_range)
+        self.fit(freqs, psd, freq_range, ignore_range)
         self.plot(plt_log)
         self.print_params()
 
 
-    def fit(self, freqs, psd, freq_range):
+    def fit(self, freqs, psd, freq_range, ignore_range=None):
         """Fit the full PSD as 1/f and gaussian oscillations.
 
         Parameters
@@ -161,8 +166,10 @@ class FOOOF(object):
             Power spectral density values, linear.
         freq_range : list of [float, float]
             Desired frequency range to run FOOOF on.
+        ignore_range : list of lists of [float, float], optional
+            Inclusive frequency range(s) to exclude during full fitting procedure.
         """
-
+        
         # Clear any potentially old data (that could interfere).
         self._reset_dat()
 
@@ -171,16 +178,25 @@ class FOOOF(object):
             raise ValueError('Inputs are not 1 dimensional.')
         if freqs.shape != psd.shape:
             raise ValueError('Inputs are not consistent size.')
-
+        
         # Calculate and store frequency resolution.
         self.freq_res = freqs[1] - freqs[0]
-
+        
+###        # Check if specified, then check type & dimensions
+        if ignore_range != None:
+            if all(isinstance(to_ignore, list) or isinstance(to_ignore, ndarray) and len(to_ignore) == 2 \
+                   for to_ignore in ignore_range):
+                self.ignore_range = ignore_range
+            else: 
+                raise ValueError('Ignore range(s) are not correct type or 2 dimensional')
+###
+                
         # Log frequency inputs
         psd = np.log10(psd)
 
         # Trim the PSD to requested frequency range.
         self.freq_range = freq_range
-        self.freqs, self.psd = trim_psd(freqs, psd, self.freq_range)
+        self.freqs, self.psd = trim_psd(freqs, psd, self.freq_range, self.ignore_range)
 
         # Check bandwidth limits against frequency resolution; warn if too close.
         if round(self.freq_res, 1) >= self.bandwidth_limits[0]:
@@ -273,6 +289,12 @@ class FOOOF(object):
         # Frequency range and resolution.
         print('The input PSD was modeled in the frequency range {}-{} Hz'.format( \
               self.freq_range[0], self.freq_range[1]).center(cen_val))
+        
+        # If specified, the range(s) of ignored input.
+        if self.ignore_range != None:
+            ignored = (', ').join(str(fr) for fr in self.ignore_range)
+            print("(ignoring the values on {} Hz) \n".format(ignored).center(cen_val))
+        
         print('Frequency Resolution is {:1.2f} Hz \n'.format(self.freq_res).center(cen_val))
 
         # Background (slope) parameters.
