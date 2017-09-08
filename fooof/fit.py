@@ -182,14 +182,13 @@ class FOOOF(object):
         # Calculate and store frequency resolution.
         self.freq_res = freqs[1] - freqs[0]
         
-###        # Check if specified, then check type & dimensions
+        # Check if specified, then check type & dimensions
         if ignore_range != None:
             if all(isinstance(to_ignore, list) or isinstance(to_ignore, tuple) and len(to_ignore) == 2 \
                    for to_ignore in ignore_range):
                 self.ignore_range = ignore_range
             else: 
                 raise ValueError('Ignore range(s) are not correct type or 2 dimensional')
-###
                 
         # Log frequency inputs
         psd = np.log10(psd)
