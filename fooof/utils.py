@@ -70,14 +70,11 @@ def trim_psd(freqs, psd, f_range, ignore_range=None):
             x_1 = freqs[r_ind]
             slope = (y_0 - y_1)/(x_0 - x_1)
 
-            # List of indices to replace between left and right points of current ignore range
+            # List of indices of PSD replacement between left and right points of current ignore_range
             replace_range = np.arange(l_ind, r_ind+1, 1)
-            print("replace_range:", replace_range)
 
-            # Replace the PSD values by line defined by slope & y-int (y_0)
+            # Replace the PSD values by line defined by slope & y-int
             for index in replace_range:
-                print("prev value:", psd[index])
-                print("replacement value:", (slope*index) + y_0)
                 psd[index] = (slope * index) + y_0
             
     # Restrict freqs & psd values to the specified range(s)
