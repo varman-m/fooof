@@ -60,6 +60,7 @@ def trim_psd(freqs, psd, f_range, ignore_range=None):
     # If specified, ignore sub-range(s) by replacing values with linear curve defined by range's endpoints
     if ignore_range != None:
         
+        # Compute the frequency resolution and linear curve parameters
         freq_res = freqs[1] - freqs[0]
         for ignore in ignore_range:
             l_ind = int(np.floor(ignore[0] / freq_res))
@@ -70,10 +71,10 @@ def trim_psd(freqs, psd, f_range, ignore_range=None):
             x_1 = freqs[r_ind]
             slope = (y_0 - y_1)/(x_0 - x_1)
 
-            # List of indices of PSD replacement between left and right points of current ignore_range
+            # List of indices on which to replace PSD values
             replace_range = np.arange(l_ind, r_ind+1, 1)
 
-            # Replace the PSD values by the linear curve define by endpoints of the ignore_range
+            # Replace the PSD values with the line evaluated on the current ignore_range
             for index in replace_range:
                 psd[index] = (slope * freqs[index]) - (slope * x_0) + y_0
             
