@@ -98,7 +98,7 @@ fm.report(freqs, spectrum, [2, 70], plt_log=True)
 ###################################################################################################
 
 # Create and fit a FOOOF model in fixed mode to the same data as above
-fm = FOOOF(peak_width_limits=[2, 8], aperiodic_mode='fixed')
+fm = FOOOF(peak_width_limits=[2, 8], background_mode='fixed')
 fm.report(freqs, spectrum, [2, 70], plt_log=True)
 
 ###################################################################################################
