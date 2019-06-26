@@ -52,7 +52,7 @@ spectrum = np.load('dat/spectrum_lfp.npy')
 ###################################################################################################
 
 # Initialize FOOOF - setting to aperiodic mode to use a knee fit
-fm = FOOOF(peak_width_limits=[2, 8], aperiodic_mode='knee')
+fm = FOOOF(peak_width_limits=[2, 8], background_mode='knee')
 
 ###################################################################################################
 
